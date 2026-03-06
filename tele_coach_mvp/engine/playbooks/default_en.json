@@ -1,0 +1,279 @@
+{
+  "version": "0.1.0",
+  "language": "en",
+  "entries": {
+    "unknown": {
+      "empathy_lines": [
+        "Understood, thanks for sharing that.",
+        "I hear you, and I appreciate the context."
+      ],
+      "discovery_questions": [
+        "What would be most useful to solve first on your side?",
+        "What is the main blocker right now?"
+      ],
+      "value_angles": [
+        "We can keep this lightweight and focused on your highest-risk checks.",
+        "You can start with a small pilot and expand only if it proves value."
+      ],
+      "next_step_closes": [
+        "Would a 10-minute follow-up be useful to validate fit?",
+        "Should we lock a short next step to confirm feasibility?"
+      ],
+      "do_not_say": [
+        "This is easy, just trust me."
+      ]
+    },
+    "not_interested": {
+      "empathy_lines": [
+        "Totally fair, I appreciate the direct answer.",
+        "Understood, thanks for being straightforward."
+      ],
+      "discovery_questions": [
+        "What would need to be true for this to be worth revisiting?",
+        "What typically makes solutions like this relevant for you?"
+      ],
+      "value_angles": [
+        "If priorities change, we can re-engage with a tight, low-effort trial.",
+        "We can focus only on scenarios where missed checks create high risk."
+      ],
+      "next_step_closes": [
+        "Would it be okay if I send one concise summary for future reference?",
+        "Can we schedule a brief check-in next quarter in case priorities shift?"
+      ],
+      "do_not_say": [
+        "You should care about this."
+      ]
+    },
+    "already_have_provider": {
+      "empathy_lines": [
+        "Makes sense, continuity matters when a provider is already in place.",
+        "Absolutely, switching costs are real."
+      ],
+      "discovery_questions": [
+        "What is working best with your current provider today?",
+        "Where do you see the biggest gap, if any, in your current setup?"
+      ],
+      "value_angles": [
+        "We often complement existing providers in high-risk edge cases.",
+        "You can benchmark outcomes without replacing your current workflow."
+      ],
+      "next_step_closes": [
+        "Would a side-by-side benchmark be useful before any switch discussion?",
+        "Could we run a narrow comparison on one workflow?"
+      ],
+      "do_not_say": [
+        "Your current provider is not good."
+      ]
+    },
+    "send_email": {
+      "empathy_lines": [
+        "Happy to send a concise summary.",
+        "Absolutely, I can keep it brief and actionable."
+      ],
+      "discovery_questions": [
+        "What two points should I prioritize in that email?",
+        "Who else should be included so it is useful internally?"
+      ],
+      "value_angles": [
+        "I can include a one-page ROI and compliance snapshot for quick review.",
+        "I will format it so your team can evaluate in under five minutes."
+      ],
+      "next_step_closes": [
+        "Would Thursday work for a 10-minute follow-up after you read it?",
+        "Can we pencil a short review slot now so it does not get buried?"
+      ],
+      "do_not_say": [
+        "I will just spam over details."
+      ]
+    },
+    "no_budget": {
+      "empathy_lines": [
+        "Understood, budget pressure is real.",
+        "Totally fair, timing and spend have to line up."
+      ],
+      "discovery_questions": [
+        "When does budget planning reopen for this area?",
+        "What cost threshold would make this feasible?"
+      ],
+      "value_angles": [
+        "We can scope a minimal rollout around highest-risk checks first.",
+        "Teams often offset cost by reducing manual review time quickly."
+      ],
+      "next_step_closes": [
+        "Would a phased plan help you prepare for the next budget cycle?",
+        "Can we align on a low-cost pilot option for future approval?"
+      ],
+      "do_not_say": [
+        "Budget should not matter."
+      ]
+    },
+    "not_my_job": {
+      "empathy_lines": [
+        "Got it, thanks for clarifying ownership.",
+        "That helps, I appreciate you pointing me to the right lane."
+      ],
+      "discovery_questions": [
+        "Who is best to involve for this decision?",
+        "How does your team usually evaluate this type of tool?"
+      ],
+      "value_angles": [
+        "I can provide a concise brief you can forward internally.",
+        "We can adapt the discussion to the stakeholder's priorities."
+      ],
+      "next_step_closes": [
+        "Would you be open to a quick intro to the right owner?",
+        "Can we schedule a short call with the decision-maker included?"
+      ],
+      "do_not_say": [
+        "You need to make this decision anyway."
+      ]
+    },
+    "call_back_later": {
+      "empathy_lines": [
+        "Absolutely, timing matters.",
+        "No problem, happy to reconnect later."
+      ],
+      "discovery_questions": [
+        "What date works better for a useful conversation?",
+        "What should be true by then to make that call productive?"
+      ],
+      "value_angles": [
+        "I can send a short prep note so the follow-up is efficient.",
+        "A brief agenda in advance can keep the callback under ten minutes."
+      ],
+      "next_step_closes": [
+        "Should we lock a specific callback window now?",
+        "Would next Tuesday afternoon be better for a quick revisit?"
+      ],
+      "do_not_say": [
+        "I will keep calling until you answer."
+      ]
+    },
+    "too_busy": {
+      "empathy_lines": [
+        "Understood, sounds like a packed day.",
+        "Totally fair, I will keep this tight."
+      ],
+      "discovery_questions": [
+        "What is the fastest way to evaluate this without adding work?",
+        "Would a two-minute summary now be helpful, then we pause?"
+      ],
+      "value_angles": [
+        "This can reduce recurring admin load once implemented.",
+        "A lightweight trial avoids heavy lift while proving value."
+      ],
+      "next_step_closes": [
+        "Can we set a 10-minute slot when your schedule clears?",
+        "Would a brief follow-up tomorrow be easier?"
+      ],
+      "do_not_say": [
+        "You are never too busy for this."
+      ]
+    },
+    "bad_timing": {
+      "empathy_lines": [
+        "Thanks for the honesty, timing is important.",
+        "I hear you, this may not be the ideal moment."
+      ],
+      "discovery_questions": [
+        "When would this conversation be most relevant for your team?",
+        "What upcoming event would make this more timely?"
+      ],
+      "value_angles": [
+        "We can align this to your operational calendar to avoid disruption.",
+        "A short prep now can make future rollout much smoother."
+      ],
+      "next_step_closes": [
+        "Would it help to schedule a checkpoint around that timeline?",
+        "Can we set a specific date to revisit with better timing?"
+      ],
+      "do_not_say": [
+        "Timing is not a real issue."
+      ]
+    },
+    "rarely_do_checks": {
+      "empathy_lines": [
+        "Makes sense, your volume may be lower than average.",
+        "Understood, if checks are infrequent you need lean tooling."
+      ],
+      "discovery_questions": [
+        "How many checks do you run in a typical month?",
+        "Which check types matter most when they do come up?"
+      ],
+      "value_angles": [
+        "A usage-based approach can fit low-volume operations.",
+        "Even low frequency checks can carry high compliance risk."
+      ],
+      "next_step_closes": [
+        "Would a low-volume plan review be useful next step?",
+        "Can we map a right-sized option for your check frequency?"
+      ],
+      "do_not_say": [
+        "Volume does not matter."
+      ]
+    },
+    "compliance_concern": {
+      "empathy_lines": [
+        "That is a valid concern, compliance has to come first.",
+        "Absolutely, caution here is the right move."
+      ],
+      "discovery_questions": [
+        "Which policy or regulation is your biggest concern?",
+        "What evidence would your team need to feel compliant?"
+      ],
+      "value_angles": [
+        "We can map controls directly to your compliance requirements.",
+        "Audit-friendly logs and clear data boundaries reduce risk exposure."
+      ],
+      "next_step_closes": [
+        "Would a compliance-focused review with your team be helpful?",
+        "Can we set a short risk-review session with legal or security?"
+      ],
+      "do_not_say": [
+        "Compliance is easy, do not worry."
+      ]
+    },
+    "price": {
+      "empathy_lines": [
+        "Fair point, pricing has to justify value.",
+        "I hear you, cost needs to align with outcomes."
+      ],
+      "discovery_questions": [
+        "What price point would feel workable for your team?",
+        "How are you currently measuring cost versus risk reduction?"
+      ],
+      "value_angles": [
+        "Teams typically recover cost by reducing manual verification time.",
+        "Higher confidence decisions can lower expensive downstream issues."
+      ],
+      "next_step_closes": [
+        "Would a cost-benefit walkthrough help you assess fit quickly?",
+        "Can we review a right-sized package based on your volume?"
+      ],
+      "do_not_say": [
+        "Price should not be your concern."
+      ]
+    },
+    "contract": {
+      "empathy_lines": [
+        "Understood, contract commitments are important.",
+        "Makes sense, existing terms can limit timing."
+      ],
+      "discovery_questions": [
+        "When does your current contract come up for renewal?",
+        "Are there carve-outs where a pilot is still possible?"
+      ],
+      "value_angles": [
+        "We can prepare a transition plan before renewal pressure hits.",
+        "A pilot around non-contracted workflows can reduce switching risk."
+      ],
+      "next_step_closes": [
+        "Should we set a renewal-timeline checkpoint now?",
+        "Can we plan a pre-renewal benchmark so you have options?"
+      ],
+      "do_not_say": [
+        "Just break the contract."
+      ]
+    }
+  }
+}

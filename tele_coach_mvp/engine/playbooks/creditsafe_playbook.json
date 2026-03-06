@@ -1,0 +1,158 @@
+{
+  "objections": [
+    {
+      "id": "not_interested_soft",
+      "triggers": ["not interested", "no thanks", "we are fine", "not really interested"],
+      "severity": "soft",
+      "replies": [
+        "Completely fair most firms say that before they see what lenders actually see about their company",
+        "That is usually the first reaction because most people assume it is just a credit score",
+        "All good most business owners think the same until they see the external risk data"
+      ],
+      "questions": [
+        "Do you currently offer thirty day terms to customers",
+        "How do you normally check who you extend credit to",
+        "Do you monitor existing customers or only new ones"
+      ]
+    },
+    {
+      "id": "not_interested_cartwheel",
+      "triggers": ["not interested at all", "really not interested", "definitely not interested"],
+      "severity": "hard",
+      "replies": [
+        "I would not expect you to roll out the red carpet because I called",
+        "But the reason I reached out is lenders and suppliers are already checking you",
+        "There is information on your company report influencing trading decisions daily"
+      ],
+      "questions": ["Have you ever seen what they see when they run those checks"]
+    },
+    {
+      "id": "busy",
+      "triggers": ["im busy", "not a good time", "swamped", "in the middle of something"],
+      "severity": "soft",
+      "replies": [
+        "I would be more worried if you were not busy it normally means business is slow",
+        "I completely get that I caught you cold",
+        "That is actually why most companies automate these checks through us"
+      ],
+      "questions": ["Are you near a screen for two minutes"]
+    },
+    {
+      "id": "already_use_provider",
+      "triggers": ["we use experian", "we use dun and bradstreet", "we already have a provider", "we use dnb", "we use experian"],
+      "severity": "medium",
+      "replies": [
+        "Nice that means you take credit risk seriously which is good",
+        "Most of the firms we work with used Experian or DNB before speaking with us",
+        "They are usually surprised at how much additional data we hold"
+      ],
+      "questions": ["Are you tied into a contract there or just rolling month to month"]
+    },
+    {
+      "id": "send_email",
+      "triggers": ["send me an email", "email me info", "just email me"],
+      "severity": "soft",
+      "replies": [
+        "Happy to send something across",
+        "I can fire something over but it makes far more sense once you see your report",
+        "To make sure I send the most relevant info what would you want to see"
+      ],
+      "questions": ["Are you near a screen for two minutes"]
+    },
+    {
+      "id": "accountant_handles",
+      "triggers": ["my accountant deals with that", "accountant handles it"],
+      "severity": "medium",
+      "replies": [
+        "That is common accountants normally deal with filings and year end reporting",
+        "What we show is real time trade risk how suppliers and customers see you financially",
+        "Many owners do not realise what is visible externally until they see it"
+      ],
+      "questions": ["Are you in front of a screen now"]
+    },
+    {
+      "id": "we_google_companies",
+      "triggers": ["we just google companies", "we google them"],
+      "severity": "medium",
+      "replies": [
+        "The challenge with Google is it shows marketing not financial risk",
+        "Our reports show payment behaviour insolvency signals and credit exposure",
+        "Many firms look solid online but pay late"
+      ],
+      "questions": ["Have you ever had a customer look fine but then pay late"]
+    },
+    {
+      "id": "only_trade_uk",
+      "triggers": ["we only trade in the uk"],
+      "severity": "soft",
+      "replies": ["Perfect most of our data sits in the UK anyway", "It actually makes domestic checks faster"],
+      "questions": ["Roughly how many new customers do you take on each month"]
+    },
+    {
+      "id": "credit_insurance",
+      "triggers": ["we have credit insurance"],
+      "severity": "medium",
+      "replies": ["Nice we actually work alongside insurers", "Many insurers use our reports when deciding who they insure"],
+      "questions": ["Do they ever decline cover on any of your customers"]
+    },
+    {
+      "id": "tied_into_contract",
+      "triggers": ["we are tied into a contract"],
+      "severity": "medium",
+      "replies": ["Got you that is common", "A lot of firms line us up ready for renewal so there is no gap"],
+      "questions": ["When does that contract run until"]
+    },
+    {
+      "id": "dont_use_credit_checks",
+      "triggers": ["we dont use credit checks", "we dont need credit checks"],
+      "severity": "medium",
+      "replies": ["Understood many teams do not call it credit checking", "They simply want to avoid late payers"],
+      "questions": ["How do you currently assess if a new customer is financially stable"]
+    },
+    {
+      "id": "who_are_creditsafe",
+      "triggers": ["who are creditsafe"],
+      "severity": "soft",
+      "replies": [
+        "Great question we are the worlds most used business credit data provider",
+        "Over one hundred thousand businesses use us to monitor financial stability"
+      ],
+      "questions": ["How do you currently make those risk decisions"]
+    },
+    {
+      "id": "not_my_responsibility",
+      "triggers": ["not my responsibility"],
+      "severity": "medium",
+      "replies": ["Thanks for letting me know", "I just want to make sure I speak to the right person"],
+      "questions": ["Who normally handles credit decisions or customer approvals"]
+    },
+    {
+      "id": "data_accuracy",
+      "triggers": ["data accuracy issues", "data incorrect"],
+      "severity": "medium",
+      "replies": ["I hear that a lot the industry was not great ten years ago", "Creditsafe now updates millions of records daily"],
+      "questions": ["What specific accuracy issues did you experience"]
+    },
+    {
+      "id": "too_expensive",
+      "triggers": ["too expensive"],
+      "severity": "medium",
+      "replies": ["I understand most teams feel that way initially", "A five pound credit check can prevent a five thousand pound write off"],
+      "questions": ["Would ten minutes be worth it if it actually saved money"]
+    },
+    {
+      "id": "no_budget",
+      "triggers": ["no budget"],
+      "severity": "medium",
+      "replies": ["Of course budgets are tight everywhere", "That is actually why many firms use Creditsafe to replace manual checks"],
+      "questions": ["When is your next budget cycle"]
+    },
+    {
+      "id": "manual_process",
+      "triggers": ["we do everything manually"],
+      "severity": "medium",
+      "replies": ["That is very common", "It is usually the easiest area to improve"],
+      "questions": ["If you automated one part of the process what would give you the most time back"]
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+body {
+  color: var(--creditsafe-text, #ffffff);
+}
+
+.panel {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: var(--creditsafe-panel, #1c1c1c);
+  padding: 12px;
+  height: 100%;
+  overflow: auto;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
+}
+
+.overlay-header {
+  margin-bottom: 12px;
+}
+
+.overlay-header__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--creditsafe-text, #ffffff);
+  letter-spacing: 0.02em;
+}
+
+.overlay-header__subtitle {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.momentum-indicator {
+  margin-bottom: 12px;
+}
+
+.momentum-indicator__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.momentum-indicator__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.momentum-indicator__level {
+  font-size: 0.8rem;
+  color: var(--creditsafe-text, #ffffff);
+  min-width: 4.5em;
+}
+
+.momentum-indicator__bar {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.momentum-indicator__slot {
+  flex: 1;
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.15s ease;
+}
+
+.momentum-indicator__slot--filled {
+  background: var(--creditsafe-primary, #d71920);
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  color: #121212;
+}
+
+.severity-badge--soft {
+  background: var(--creditsafe-badge-soft, #c9a227);
+}
+
+.severity-badge--medium {
+  background: var(--creditsafe-badge-medium, #d9730d);
+}
+
+.severity-badge--hard {
+  background: var(--creditsafe-badge-hard, #b91c1c);
+}
+
+.drag-region {
+  width: 100%;
+  height: 20px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-app-region: drag;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.error-banner {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 108, 108, 0.5);
+  background: rgba(120, 24, 24, 0.3);
+  color: #ffd1d1;
+}
+
+.status-line {
+  margin: 8px 0;
+  color: var(--creditsafe-text, #ffffff);
+}
+
+.vad-wrap {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin: 8px 0 12px;
+}
+
+.vad-fill {
+  height: 100%;
+  background: #cfff04;
+  transition: width 120ms linear;
+}
+
+button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--creditsafe-text, #ffffff);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--creditsafe-accent, #ff4b4b);
+  color: var(--creditsafe-text, #ffffff);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.copy-button {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.compact-block {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.coaching-pack__block {
+  margin-bottom: 12px;
+}
+
+.coaching-pack__block:last-child {
+  margin-bottom: 0;
+}
+
+.coaching-pack__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 4px;
+}
+
+.coaching-pack__content {
+  font-size: 0.9rem;
+  color: var(--creditsafe-text, #ffffff);
+  line-height: 1.35;
+}
+
+.coaching-pack__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.coaching-pack__row .coaching-pack__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.legacy-suggestions {
+  margin-top: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.legacy-suggestions__toggle {
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+

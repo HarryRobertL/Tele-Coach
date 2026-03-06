@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# TODO: Replace with actual whisper.cpp binary for Intel macOS.
+echo "whisper placeholder binary"
