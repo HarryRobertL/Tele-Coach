@@ -17,13 +17,16 @@
 - Rebuild native module for Electron (recommended after install/version changes):
   - `npm run rebuild-native`
 
-## 3) Add Whisper Binary and Model
-- Place whisper.cpp executable at:
-  - `engine/stt/whisper/bin/whisper`
-- Make it executable:
-  - `chmod +x engine/stt/whisper/bin/whisper`
-- Place tiny English model at:
-  - `engine/stt/whisper/models/ggml_tiny_en.bin`
+## 3) Configure Whisper delivery mode and artifacts
+- Set delivery mode explicitly:
+  - Pilot/dev: `export TELE_COACH_WHISPER_DELIVERY_MODE=pilot`
+  - Enterprise/prod: `export TELE_COACH_WHISPER_DELIVERY_MODE=enterprise`
+- For enterprise mode, set internal artifact env vars documented in `docs/WHISPER_SETUP_NOTES.md`.
+- Runtime binary paths:
+  - mac/linux: `engine/stt/whisper/bin/whisper`
+  - windows: `engine/stt/whisper/bin/whisper.exe`
+- Runtime model path:
+  - `engine/stt/whisper/models/ggml-tiny.en.bin`
 
 ## 4) Run Dev
 - Start renderer + Electron:
@@ -39,6 +42,10 @@
   - `npm run build`
 - Run built app:
   - `npm run start`
+- Release gate (must pass before rollout):
+  - `npm run typecheck`
+  - `npm run verify-whisper`
+  - `npm run test-whisper-runtime`
 
 ## Runtime Notes
 - Local DB path: `data/app.sqlite`

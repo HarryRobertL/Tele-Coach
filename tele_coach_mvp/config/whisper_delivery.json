@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "delivery_modes": ["pilot", "enterprise"],
+  "default_mode_by_environment": {
+    "development": "pilot",
+    "pilot": "pilot",
+    "production": "enterprise"
+  },
+  "binary": {
+    "version": "whisper.cpp v1.8.3",
+    "release_tag": "v1.8.3",
+    "min_size_bytes": 500000
+  },
+  "model": {
+    "version": "ggml-tiny.en.bin",
+    "file_name": "ggml-tiny.en.bin",
+    "legacy_file_name": "ggml_tiny_en.bin",
+    "min_size_bytes": 70000000,
+    "sha256": "921e4cf8686fdd993dcd081a5da5b6c365bfde1162e72b08d75ac75289920b1f",
+    "upstream_url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin",
+    "enterprise_url_env": "TELE_COACH_WHISPER_MODEL_URL_ENTERPRISE",
+    "enterprise_sha256_env": "TELE_COACH_WHISPER_MODEL_SHA256_ENTERPRISE"
+  },
+  "platforms": {
+    "darwin-arm64": {
+      "runtime_binary_name": "whisper",
+      "upstream_zip_url": null,
+      "upstream_zip_sha256": null,
+      "upstream_build_from_source": true,
+      "enterprise_zip_url_env": "TELE_COACH_WHISPER_BINARY_URL_DARWIN_ARM64",
+      "enterprise_zip_sha256_env": "TELE_COACH_WHISPER_BINARY_ZIP_SHA256_DARWIN_ARM64"
+    },
+    "darwin-x64": {
+      "runtime_binary_name": "whisper",
+      "upstream_zip_url": null,
+      "upstream_zip_sha256": null,
+      "upstream_build_from_source": true,
+      "enterprise_zip_url_env": "TELE_COACH_WHISPER_BINARY_URL_DARWIN_X64",
+      "enterprise_zip_sha256_env": "TELE_COACH_WHISPER_BINARY_ZIP_SHA256_DARWIN_X64"
+    },
+    "win32-x64": {
+      "runtime_binary_name": "whisper.exe",
+      "upstream_zip_url": "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-Win32.zip",
+      "upstream_zip_sha256": "219dd423cd910b72e7794b9a17f578367ba815010afcff26e3d7b527b3c111fa",
+      "enterprise_zip_url_env": "TELE_COACH_WHISPER_BINARY_URL_WIN32_X64",
+      "enterprise_zip_sha256_env": "TELE_COACH_WHISPER_BINARY_ZIP_SHA256_WIN32_X64"
+    }
+  }
+}

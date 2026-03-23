@@ -2,7 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.selectCoachingPack = selectCoachingPack;
 const playbook_classifier_1 = require("../classifier/playbook_classifier");
+const adaptive_weights_1 = require("../classifier/adaptive_weights");
 const severity_rules_1 = require("../classifier/severity_rules");
+const intent_classifier_1 = require("../classifier/intent_classifier");
+const competitor_detector_1 = require("../classifier/competitor_detector");
+const state_machine_1 = require("../conversation/state_machine");
+const momentum_engine_1 = require("../scoring/momentum_engine");
 const bridge_picker_1 = require("../playbooks/bridge_picker");
 const playbook_loader_1 = require("../playbooks/playbook_loader");
 const TIME_BUCKET_MS = 10000;
@@ -14,12 +19,6 @@ const UNKNOWN_QUESTIONS = [
     "What would be most useful to solve first on your side?",
     "What is the main blocker right now?"
 ];
-const DEMO_INVITE_PHRASES = [
-    "are you near a screen",
-    "two minutes",
-    "show you your report"
-];
-const QUESTION_WORDS = ["how", "what", "when", "who", "do you"];
 const lastReplyByObjection = {};
 const lastQuestionByObjection = {};
 const playbook = (0, playbook_loader_1.loadCreditsafePlaybookSafe)();
@@ -53,37 +52,59 @@ function seededPick(arr, seedText, lastByKey, key) {
     lastByKey[key] = chosen;
     return chosen;
 }
-function computeMomentum(transcript, objectionConfidence) {
-    let score = 0;
-    const reason = [];
-    const lower = transcript.toLowerCase();
-    for (const phrase of DEMO_INVITE_PHRASES) {
-        if (lower.includes(phrase)) {
-            score += 3;
-            reason.push("demo_invite_phrase");
-            break;
-        }
+function adaptivePick(arr, seedText, lastByKey, key, phraseBoosts, objectionBoost) {
+    if (arr.length === 0)
+        return "";
+    const candidates = arr.map((text) => ({
+        text,
+        boost: (phraseBoosts[(0, adaptive_weights_1.normalizeAdaptivePhrase)(text)] ?? 0) + objectionBoost * 0.35
+    }));
+    const hasMeaningfulSignal = candidates.some((candidate) => Math.abs(candidate.boost) >= 0.015);
+    if (!hasMeaningfulSignal) {
+        return seededPick(arr, seedText, lastByKey, key);
     }
-    if (lower.includes("?") || QUESTION_WORDS.some((w) => lower.includes(w))) {
-        score += 1;
-        reason.push("question_mark_or_question_word");
+    const timeBucket = Math.floor(Date.now() / TIME_BUCKET_MS);
+    const seed = `${seedText}|adaptive|${timeBucket}`;
+    const ranked = candidates
+        .map((candidate) => {
+        const tieBreaker = (hashString(`${seed}|${candidate.text}`) % 1000) / 1000 / 100;
+        return {
+            text: candidate.text,
+            score: candidate.boost + tieBreaker
+        };
+    })
+        .sort((a, b) => b.score - a.score);
+    const last = lastByKey[key];
+    let chosen = ranked[0]?.text ?? arr[0];
+    if (ranked.length > 1 && last !== undefined && chosen === last) {
+        chosen = ranked[1]?.text ?? chosen;
     }
-    if (objectionConfidence > 0.7) {
-        score += 1;
-        reason.push("objection_confidence_above_0_7");
-    }
-    score = Math.min(5, score);
-    let level = "low";
-    if (score >= 4)
-        level = "high";
-    else if (score >= 2)
-        level = "medium";
-    return { level, score, reason };
+    lastByKey[key] = chosen;
+    return chosen;
 }
-/**
- * Selects a full coaching pack: objection, severity, response, question, bridge, and momentum.
- */
-function selectCoachingPack(transcript) {
+function mapIntentToDemoReadiness(intent) {
+    switch (intent) {
+        case "demo_ready":
+            return 90;
+        case "curious":
+            return 65;
+        case "callback":
+            return 50;
+        case "price_check":
+            return 55;
+        case "competitor_locked":
+            return 45;
+        case "brush_off":
+            return 25;
+        case "not_relevant":
+            return 10;
+        case "unknown":
+        default:
+            return 25;
+    }
+}
+function selectCoachingPack(transcript, context) {
+    const adaptive = (0, adaptive_weights_1.getAdaptiveWeights)();
     const objection = (0, playbook_classifier_1.detectObjectionId)(transcript);
     const severity = (0, severity_rules_1.detectSeverity)(transcript);
     const entry = objectionById.get(objection.id);
@@ -91,21 +112,46 @@ function selectCoachingPack(transcript) {
     const questions = entry?.questions ?? UNKNOWN_QUESTIONS;
     const transcriptTail = transcript.slice(-250);
     const seedBase = transcriptTail + objection.id;
-    const response = seededPick(replies, seedBase + "reply", lastReplyByObjection, objection.id);
-    const question = seededPick(questions, seedBase + "question", lastQuestionByObjection, objection.id);
+    const objectionBoost = adaptive.objectionBoosts[objection.id] ?? 0;
+    const response = adaptivePick(replies, seedBase + "reply", lastReplyByObjection, objection.id, adaptive.phraseBoosts, objectionBoost);
+    const question = adaptivePick(questions, seedBase + "question", lastQuestionByObjection, objection.id, adaptive.phraseBoosts, objectionBoost);
     const bridgeSeedText = objection.id + severity + transcript.slice(-250);
     const bridge = (0, bridge_picker_1.pickBridge)(bridgeSeedText);
-    const momentum = computeMomentum(transcript, objection.confidence);
+    const intent = (0, intent_classifier_1.classifyIntent)(transcript);
+    const conversationState = (0, state_machine_1.deriveConversationState)({
+        rollingText: context?.rollingText ?? transcript,
+        recentSegments: context?.recentStableSegments ?? [],
+        objectionId: objection.id,
+        intent: intent.primary_intent
+    });
+    const competitorDetection = (0, competitor_detector_1.detectCompetitors)(transcript);
+    const momentum = (0, momentum_engine_1.scoreMomentum)({
+        transcript,
+        intent: intent.primary_intent,
+        stage: conversationState.stage,
+        severity,
+        competitorCategory: competitorDetection.category,
+        competitorMentions: competitorDetection.mentions
+    });
+    const demoReadinessScore = mapIntentToDemoReadiness(intent.primary_intent);
     return {
-        objection: {
-            id: objection.id,
-            confidence: objection.confidence,
-            matched: objection.matched
-        },
+        objection_id: objection.id,
+        confidence: objection.confidence,
         severity,
         response,
         question,
         bridge,
-        momentum
+        momentum_level: momentum.level,
+        momentum_score: momentum.score,
+        momentum_reasons: momentum.reasons,
+        intent: intent.primary_intent,
+        intent_confidence: intent.confidence,
+        intent_signals: intent.signals,
+        demo_readiness_score: demoReadinessScore,
+        conversation_stage: conversationState.stage,
+        stage_confidence: conversationState.confidence,
+        stage_reasons: conversationState.reasons,
+        competitor_mentions: competitorDetection.mentions,
+        timestamp: Date.now()
     };
 }

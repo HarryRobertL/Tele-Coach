@@ -1,0 +1,69 @@
+{
+  "appId": "com.telecoach.desktop",
+  "productName": "Tele Coach",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "app/electron/dist/**/*",
+    "app/renderer/dist/**/*",
+    "config/**/*",
+    "engine/**/*",
+    "data/**/*",
+    "node_modules/**/*",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "engine/stt/whisper/bin/whisper",
+      "to": "whisper/bin/whisper"
+    },
+    {
+      "from": "engine/stt/whisper/bin/whisper.exe",
+      "to": "whisper/bin/whisper.exe"
+    },
+    {
+      "from": "engine/stt/whisper/models/ggml-tiny.en.bin",
+      "to": "whisper/models/ggml-tiny.en.bin"
+    }
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "icon": "build/icon.icns",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "assets/entitlements.mac.plist",
+    "entitlementsInherit": "assets/entitlements.mac.plist"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "assets/icons/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Tele Coach"
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "assets/icons/icon.png"
+  }
+}

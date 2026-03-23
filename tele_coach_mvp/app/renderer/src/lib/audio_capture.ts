@@ -83,10 +83,21 @@ function createPcmWorkletUrl(): string {
         if (!input || input.length === 0 || !input[0]) {
           return true;
         }
-        const ch0 = input[0];
-        const copy = new Float32Array(ch0.length);
-        copy.set(ch0);
-        this.port.postMessage(copy, [copy.buffer]);
+        const frameLength = input[0].length;
+        const channels = input.length;
+        const mono = new Float32Array(frameLength);
+        if (channels === 1) {
+          mono.set(input[0]);
+        } else {
+          for (let i = 0; i < frameLength; i += 1) {
+            let sum = 0;
+            for (let ch = 0; ch < channels; ch += 1) {
+              sum += input[ch][i] || 0;
+            }
+            mono[i] = sum / channels;
+          }
+        }
+        this.port.postMessage(mono, [mono.buffer]);
         return true;
       }
     }
@@ -107,6 +118,23 @@ export class AudioCapture {
   private workletUrl: string | null = null;
 
   constructor(private readonly options: AudioCaptureOptions) {}
+
+  private pickPreferredInput(devices: MediaDeviceInfo[]): MediaDeviceInfo | null {
+    const inputs = devices.filter((device) => device.kind === "audioinput");
+    if (inputs.length === 0) return null;
+    const ranked = [...inputs].sort((a, b) => {
+      const score = (device: MediaDeviceInfo): number => {
+        const label = device.label.toLowerCase();
+        let s = 0;
+        if (/(macbook|built-?in|internal)/.test(label)) s += 10;
+        if (/(microphone|mic)/.test(label)) s += 2;
+        if (/(iphone|continuity)/.test(label)) s -= 10;
+        return s;
+      };
+      return score(b) - score(a);
+    });
+    return ranked[0] ?? null;
+  }
 
   private setStatus(status: MicStatus, detail?: string): void {
     this.options.onStatus?.(status, detail);
@@ -138,8 +166,10 @@ export class AudioCapture {
     this.setStatus("requesting");
     this.stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        channelCount: 1,
-        sampleRate: 16000,
+        channelCount: { ideal: 1 },
+        sampleRate: { ideal: 48000 },
+        // H9: disable browser DSP in packaged runtime in case processing path
+        // is collapsing low-level signal to silence.
         echoCancellation: false,
         noiseSuppression: false,
         autoGainControl: false
@@ -147,7 +177,32 @@ export class AudioCapture {
       video: false
     });
 
-    this.context = new AudioContext({ sampleRate: 16000 });
+    // After permission is granted, enumerate devices and prefer built-in mic.
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const preferredInput = this.pickPreferredInput(devices);
+    const currentTrack = this.stream.getAudioTracks()[0] ?? null;
+    const currentDeviceId = currentTrack?.getSettings().deviceId;
+    if (
+      preferredInput &&
+      preferredInput.deviceId &&
+      preferredInput.deviceId !== currentDeviceId
+    ) {
+      this.stream.getTracks().forEach((track) => track.stop());
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: { exact: preferredInput.deviceId },
+          channelCount: { ideal: 1 },
+          sampleRate: { ideal: 48000 },
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        },
+        video: false
+      });
+    }
+
+    // Use device/native sample rate for capture reliability; we resample to 16 kHz in software.
+    this.context = new AudioContext();
     const inputRate = this.context.sampleRate;
     this.sourceNode = this.context.createMediaStreamSource(this.stream);
 
@@ -156,33 +211,30 @@ export class AudioCapture {
     this.sinkNode.gain.value = 0;
     this.sinkNode.connect(this.context.destination);
 
-    if (typeof AudioWorkletNode !== "undefined") {
-      const processorName = `pcm-capture-processor-${workletModuleCounter + 1}`;
-      this.workletUrl = createPcmWorkletUrl();
-      await this.context.audioWorklet.addModule(this.workletUrl);
-      this.workletNode = new AudioWorkletNode(this.context, processorName);
-      this.workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
-        this.flushFrames(event.data, inputRate);
-      };
-      this.sourceNode.connect(this.workletNode);
-      this.workletNode.connect(this.sinkNode);
-    } else {
-      this.processorNode = this.context.createScriptProcessor(4096, 1, 1);
-      this.processorNode.onaudioprocess = (event) => {
-        const channels: Float32Array[] = [];
-        for (let i = 0; i < event.inputBuffer.numberOfChannels; i += 1) {
-          channels.push(event.inputBuffer.getChannelData(i));
-        }
-        const mono = downmixToMono(channels);
-        this.flushFrames(new Float32Array(mono), inputRate);
-      };
-      this.sourceNode.connect(this.processorNode);
-      this.processorNode.connect(this.sinkNode);
-    }
+    // ScriptProcessor is deprecated for browsers, but in packaged Electron it is
+    // significantly more reliable than AudioWorklet across macOS device setups.
+    this.processorNode = this.context.createScriptProcessor(4096, 1, 1);
+    this.processorNode.onaudioprocess = (event) => {
+      const channels: Float32Array[] = [];
+      for (let i = 0; i < event.inputBuffer.numberOfChannels; i += 1) {
+        channels.push(event.inputBuffer.getChannelData(i));
+      }
+      const mono = downmixToMono(channels);
+      this.flushFrames(new Float32Array(mono), inputRate);
+    };
+    this.sourceNode.connect(this.processorNode);
+    this.processorNode.connect(this.sinkNode);
 
     this.pending = [];
     this.active = true;
-    this.setStatus("active");
+    const activeTrack = this.stream.getAudioTracks()[0] ?? null;
+    const activeDeviceId = activeTrack?.getSettings().deviceId;
+    const activeDeviceLabel =
+      devices.find((device) => device.kind === "audioinput" && device.deviceId === activeDeviceId)
+        ?.label ??
+      preferredInput?.label ??
+      "default microphone";
+    this.setStatus("active", activeDeviceLabel);
   }
 
   async stop(): Promise<void> {

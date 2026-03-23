@@ -1,0 +1,30 @@
+{
+  "environment": "pilot",
+  "flags": {
+    "competitor_detection_enabled": true,
+    "intent_classification_enabled": true,
+    "momentum_engine_v2_enabled": true,
+    "adaptive_weighting_enabled": true,
+    "analytics_logging_enabled": true,
+    "operator_dashboard_enabled": true,
+    "local_debug_panels_enabled": false,
+    "whisper_upstream_fallback_allowed": true
+  },
+  "modes": {
+    "development": {
+      "local_debug_panels_enabled": true,
+      "operator_dashboard_enabled": true,
+      "whisper_upstream_fallback_allowed": true
+    },
+    "pilot": {
+      "analytics_logging_enabled": true,
+      "whisper_upstream_fallback_allowed": true
+    },
+    "production": {
+      "local_debug_panels_enabled": false,
+      "operator_dashboard_enabled": false,
+      "whisper_upstream_fallback_allowed": false
+    }
+  }
+}
+

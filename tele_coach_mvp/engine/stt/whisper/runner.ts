@@ -1,7 +1,23 @@
 import { EventEmitter } from "node:events";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { pcm16ToWav } from "../wav_converter";
+
+let debugSttEnabled =
+  process.env.DEBUG_STT === "1" || process.env.DEBUG_STT === "true";
+const MIN_BINARY_SIZE = 500 * 1024;
+const MIN_MODEL_SIZE = 70 * 1024 * 1024;
+
+export function setWhisperDebugLogging(enabled: boolean): void {
+  debugSttEnabled = enabled;
+}
+
+function debugSttLog(message: string, ...args: unknown[]): void {
+  if (!debugSttEnabled) return;
+  console.log(message, ...args);
+}
 
 export interface WhisperRunnerOptions {
   binaryPath: string;
@@ -36,6 +52,18 @@ export interface RunnerPartialEvent {
 export interface RunnerFinalEvent {
   text: string;
   tsMs: number;
+}
+
+interface WhisperRuntimeLaunchEvent {
+  binaryPath: string;
+  modelPath: string;
+  args: string[];
+}
+
+interface WhisperRuntimeExitEvent {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stderr: string;
 }
 
 export class WhisperRunner extends EventEmitter {
@@ -73,20 +101,56 @@ export class WhisperRunner extends EventEmitter {
 
     this.emit("status", {
       state: "loading_model",
-      detail: `Loading tiny English model: ${resolvedOptions.modelPath}`
+      detail: `Loading Whisper model: ${path.basename(resolvedOptions.modelPath)}`
     } satisfies RunnerStatusEvent);
 
     if (!fs.existsSync(resolvedOptions.binaryPath)) {
+      debugSttLog(`[WhisperRunner] ERROR: Binary missing at ${resolvedOptions.binaryPath}`);
       this.emit("status", {
         state: "error",
-        detail: `whisper binary missing at ${resolvedOptions.binaryPath}. Place whisper.cpp binary at engine/stt/whisper/bin/whisper`
+        detail: `whisper binary missing at ${resolvedOptions.binaryPath}. Sales floor mode: Use manual test input.`
       } satisfies RunnerStatusEvent);
       return;
     }
     if (!fs.existsSync(resolvedOptions.modelPath)) {
+      debugSttLog(`[WhisperRunner] ERROR: Model missing at ${resolvedOptions.modelPath}`);
       this.emit("status", {
         state: "error",
-        detail: `model missing at ${resolvedOptions.modelPath}. Place tiny model at engine/stt/whisper/models/ggml_tiny_en.bin`
+        detail: `Selected model missing at ${resolvedOptions.modelPath}. Switch to tiny.en or download model assets.`
+      } satisfies RunnerStatusEvent);
+      return;
+    }
+
+    // Check if files are placeholders (too small)
+    try {
+      const binaryStats = fs.statSync(resolvedOptions.binaryPath);
+      const modelStats = fs.statSync(resolvedOptions.modelPath);
+      debugSttLog(`[WhisperRunner] File sizes: binary=${binaryStats.size} bytes, model=${modelStats.size} bytes`);
+      
+      if (binaryStats.size < MIN_BINARY_SIZE) {
+        debugSttLog(`[WhisperRunner] ERROR: Binary too small (${binaryStats.size} bytes)`);
+        this.emit("status", {
+          state: "error",
+          detail: `whisper binary is placeholder file. Sales floor mode: Use manual test input.`
+        } satisfies RunnerStatusEvent);
+        return;
+      }
+      
+      if (modelStats.size < MIN_MODEL_SIZE) {
+        debugSttLog(`[WhisperRunner] ERROR: Model too small (${modelStats.size} bytes)`);
+        this.emit("status", {
+          state: "error",
+          detail: `model file is placeholder. Sales floor mode: Use manual test input.`
+        } satisfies RunnerStatusEvent);
+        return;
+      }
+      
+      debugSttLog(`[WhisperRunner] File validation passed, starting runner`);
+    } catch (error) {
+      debugSttLog(`[WhisperRunner] ERROR: Failed to validate files:`, error);
+      this.emit("status", {
+        state: "error",
+        detail: `Failed to validate Whisper files. Sales floor mode: Use manual test input.`
       } satisfies RunnerStatusEvent);
       return;
     }
@@ -150,13 +214,17 @@ export class WhisperRunner extends EventEmitter {
     this.busy = true;
     try {
       const audio = Buffer.concat(this.chunks);
+      debugSttLog(`[WhisperRunner] Processing audio: ${audio.length} bytes, ${this.chunks.length} chunks`);
+      
       const text = await this.runWhisper(audio, this.options);
       this.consecutiveErrors = 0;
+      debugSttLog(`[WhisperRunner] Whisper result: "${text}"`);
       this.emitPartial(text);
       this.maybeEmitFinal(text);
     } catch (error) {
       this.consecutiveErrors += 1;
       const detail = error instanceof Error ? error.message : "Unknown whisper runner error.";
+      debugSttLog(`[WhisperRunner] Error: ${detail}`);
       this.emit("status", { state: "error", detail } satisfies RunnerStatusEvent);
       if (!this.fallbackActive && this.consecutiveErrors >= 3) {
         this.fallbackActive = true;
@@ -173,63 +241,122 @@ export class WhisperRunner extends EventEmitter {
 
   private runWhisper(audio: Buffer, options: Required<WhisperRunnerOptions>): Promise<string> {
     return new Promise((resolve, reject) => {
+      // Use temp wav files for maximum runtime compatibility across Whisper binary variants.
+      const tempWavPath = path.join(
+        os.tmpdir(),
+        `tele-coach-window-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.wav`
+      );
+      let cleaned = false;
+      const cleanup = async (): Promise<void> => {
+        if (cleaned) return;
+        cleaned = true;
+        try {
+          await fs.promises.rm(tempWavPath, { force: true });
+        } catch {
+          // Ignore cleanup failures for temp artifacts.
+        }
+      };
+
       const args = [
         "-m",
         options.modelPath,
+        "-ng",
+        "-nfa",
         "-l",
         "en",
-        "--output-txt",
         "--no-timestamps",
         "-f",
-        "-"
+        tempWavPath
       ];
-      const child = spawn(options.binaryPath, args, { stdio: ["pipe", "pipe", "pipe"] });
+      debugSttLog(`[WhisperRunner] Spawning: ${options.binaryPath} with args:`, args);
+      this.emit("runtime_launch", {
+        binaryPath: options.binaryPath,
+        modelPath: options.modelPath,
+        args
+      } satisfies WhisperRuntimeLaunchEvent);
+
       let stdout = "";
       let stderr = "";
       let settled = false;
+      let child: ReturnType<typeof spawn> | null = null;
 
-      const resolveOnce = (text: string) => {
+      const resolveOnce = async (text: string) => {
         if (settled) return;
         settled = true;
+        await cleanup();
         resolve(text);
       };
-      const rejectOnce = (error: Error) => {
+      const rejectOnce = async (error: Error) => {
         if (settled) return;
         settled = true;
+        await cleanup();
         reject(error);
       };
 
-      child.stdout.on("data", (chunk: Buffer | string) => {
-        stdout += chunk.toString();
-      });
-      child.stderr.on("data", (chunk: Buffer | string) => {
-        stderr += chunk.toString();
-      });
-      child.stdin.on("error", (err: Error) => {
-        rejectOnce(new Error(`whisper stdin pipe error: ${err.message}`));
-      });
-      child.once("error", (err) => {
-        rejectOnce(new Error(`Failed to launch whisper binary: ${err.message}`));
-      });
-      child.once("close", (code) => {
-        if (code !== 0) {
-          rejectOnce(
-            new Error(
-              `whisper exited with code ${code}. stderr: ${stderr || "empty"}`
-            )
+      void (async () => {
+        try {
+          const wavBuffer = pcm16ToWav(new Uint8Array(audio));
+          debugSttLog(
+            `[WhisperRunner] WAV conversion: ${audio.length} bytes PCM -> ${wavBuffer.byteLength} bytes WAV`
           );
+          await fs.promises.writeFile(tempWavPath, Buffer.from(wavBuffer));
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : "unknown wav write failure";
+          debugSttLog(`[WhisperRunner] WAV write error: ${detail}`);
+          await rejectOnce(new Error(`whisper temp wav write failed: ${detail}`));
           return;
         }
-        resolveOnce(this.parseWhisperText(stdout));
-      });
 
-      try {
-        child.stdin.write(audio);
-        child.stdin.end();
-      } catch (error) {
-        const detail = error instanceof Error ? error.message : "unknown stdin write failure";
-        rejectOnce(new Error(`whisper stdin write failed: ${detail}`));
-      }
+        child = spawn(options.binaryPath, args, { stdio: ["ignore", "pipe", "pipe"] });
+        child.stdout?.on("data", (chunk: Buffer | string) => {
+          stdout += chunk.toString();
+        });
+        child.stderr?.on("data", (chunk: Buffer | string) => {
+          stderr += chunk.toString();
+        });
+        child.once("error", async (err) => {
+          await rejectOnce(new Error(`Failed to launch whisper binary: ${err.message}`));
+        });
+        child.once("close", async (code, signal) => {
+          this.emit("runtime_exit", {
+            code,
+            signal,
+            stderr: stderr.trim()
+          } satisfies WhisperRuntimeExitEvent);
+          if (code !== 0) {
+            await rejectOnce(
+              new Error(`whisper exited with code ${code}. stderr: ${stderr || "empty"}`)
+            );
+            return;
+          }
+          const transcript = this.parseWhisperText(stdout);
+          const lowerStdout = stdout.toLowerCase();
+          const lowerStderr = stderr.toLowerCase();
+          const looksLikeHelp =
+            lowerStdout.includes("usage:") ||
+            lowerStdout.includes("--help") ||
+            lowerStdout.includes("options:");
+          const stderrIndicatesError =
+            (lowerStderr.includes("error") || lowerStderr.includes("failed")) &&
+            !lowerStderr.includes("warnings");
+          if (looksLikeHelp || stderrIndicatesError) {
+            await rejectOnce(
+              new Error(
+                `whisper exited 0 but produced invalid transcript output. stdout="${stdout.trim()}" stderr="${stderr.trim()}"`
+              )
+            );
+            return;
+          }
+          if (!transcript) {
+            debugSttLog(
+              `[WhisperRunner] Empty transcript window (exit 0). bytes_in=${audio.length} stderr_tail="${stderr.trim().slice(-200)}"`
+            );
+            await resolveOnce("");
+            return;
+          }
+          await resolveOnce(transcript);
+        });
+      })();
     });
   }
 

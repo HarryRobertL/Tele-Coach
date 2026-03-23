@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#1c1c1c" rx="64"/>
+  <text x="256" y="180" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff">TC</text>
+  <text x="256" y="280" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#d71920">Tele Coach</text>
+  <circle cx="256" cy="350" r="30" fill="none" stroke="#d71920" stroke-width="4"/>
+  <path d="M236 350 L246 360 L276 330" stroke="#d71920" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

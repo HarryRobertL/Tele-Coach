@@ -16,9 +16,10 @@ out/
 .env.test.local
 .env.production.local
 
-# IDE files
+# IDE / local tooling
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 
@@ -46,3 +47,7 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Local artifacts (builds, review bundles)
+tele_coach_mvp/release/
+*.zip

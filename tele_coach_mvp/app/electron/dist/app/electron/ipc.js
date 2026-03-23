@@ -19,15 +19,15 @@ function registerIpcHandlers(options) {
         await options.onLogOutcome(payload);
         return { ok: true };
     });
+    electron_1.ipcMain.handle("log_copy_action", async (_event, payload) => {
+        await options.onLogCopyAction(payload);
+        return { ok: true };
+    });
     electron_1.ipcMain.handle("get_settings", async () => {
         return options.onGetSettings();
     });
     electron_1.ipcMain.handle("update_settings", async (_event, payload) => {
         return options.onUpdateSettings(payload);
-    });
-    electron_1.ipcMain.handle("log_suggestion_click", async (_event, payload) => {
-        await options.onLogSuggestionClick(payload);
-        return { ok: true };
     });
     electron_1.ipcMain.handle("delete_data", async () => {
         await options.onDeleteData();
@@ -39,6 +39,23 @@ function registerIpcHandlers(options) {
     electron_1.ipcMain.handle("run_manual_test", async (_event, payload) => {
         await options.onRunManualTest(payload);
         return { ok: true };
+    });
+    electron_1.ipcMain.handle("whisper_status", async () => {
+        return options.onWhisperStatus();
+    });
+    electron_1.ipcMain.handle("whisper_install", async () => {
+        await options.onWhisperInstall();
+        return { ok: true };
+    });
+    electron_1.ipcMain.handle("whisper_retry", async () => {
+        await options.onWhisperRetry();
+        return { ok: true };
+    });
+    electron_1.ipcMain.handle("run_whisper_test", async () => {
+        return options.onRunWhisperTest();
+    });
+    electron_1.ipcMain.handle("get_feature_flags", async () => {
+        return options.onGetFeatureFlags();
     });
     electron_1.ipcMain.on("audio_chunk", (_event, payload) => {
         void options.onAudioChunk(payload);
